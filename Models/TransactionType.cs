@@ -2,7 +2,11 @@
 {
     public class TransactionType
     {
-          // Einnahme
-          // Ausgabe
+
+       
+        Type incomeType;
+        Type expenseType;
+
+
     }
 }
