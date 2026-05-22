@@ -1,0 +1,56 @@
+﻿@page "/add-transaction"
+@using FinanzAladin.Classes
+@using FinanzAladin.Service
+@inject TransactionService TransactionService
+@inject NavigationManager Navigation
+
+<h1>Neue Buchung hinzufügen</h1>
+
+<div class="mb-3">
+    <label>Titel</label>
+    <input class="form-control" @bind="transaction.Title" />
+</div>
+
+<div class="mb-3">
+    <label>Betrag</label>
+    <input class="form-control" type="number" @bind="transaction.Amount" />
+</div>
+
+<div class="mb-3">
+    <label>Datum</label>
+    <input class="form-control" type="date" @bind="transaction.Date" />
+</div>
+
+<div class="mb-3">
+    <label>Art</label>
+    <select class="form-control" @bind="transaction.Type">
+        <option value="@TransactionType.Income">Einnahme</option>
+        <option value="@TransactionType.Expense">Ausgabe</option>
+    </select>
+</div>
+
+<div class="mb-3">
+    <label>Kategorie</label>
+    <input class="form-control" @bind="transaction.Category" />
+</div>
+
+<div class="mb-3">
+    <label>Notiz</label>
+    <input class="form-control" @bind="transaction.Note" />
+</div>
+
+<button class="btn btn-success" @onclick="Save">Speichern</button>
+
+@code {
+    private Transaction transaction = new Transaction
+    {
+        Date = DateTime.Today,
+        Type = TransactionType.Expense
+    };
+
+    private void Save()
+    {
+        TransactionService.AddTransaction(transaction);
+        Navigation.NavigateTo("/transactions");
+    }
+}

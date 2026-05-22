@@ -1,0 +1,33 @@
+﻿@page "/dashboard"
+@using FinanzAladin.Services
+@inject TransactionService TransactionService
+
+<h1>Finanzmanager</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card p-3">
+            <h4>Kontostand</h4>
+            <p>@TransactionService.GetBalance() €</p>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-3">
+            <h4>Einnahmen</h4>
+            <p>@TransactionService.GetIncome() €</p>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-3">
+            <h4>Ausgaben</h4>
+            <p>@TransactionService.GetExpenses() €</p>
+        </div>
+    </div>
+</div>
+
+<br />
+
+<a class="btn btn-primary" href="/add-transaction">Neue Buchung</a>
+<a class="btn btn-secondary" href="/transactions">Alle Buchungen</a>

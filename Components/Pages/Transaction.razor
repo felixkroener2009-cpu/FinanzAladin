@@ -1,0 +1,37 @@
+﻿@page "/transactions"
+@using FinanzAladin.Models
+@using FinanzAladin.Services
+@inject TransactionService TransactionService
+
+<h1>Alle Buchungen</h1>
+
+<a class="btn btn-primary mb-3" href="/add-transaction">Neue Buchung</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Titel</th>
+            <th>Betrag</th>
+            <th>Datum</th>
+            <th>Art</th>
+            <th>Kategorie</th>
+            <th>Notiz</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var t in TransactionService.Transaction)
+        {
+            <tr>
+                <td>@t.Id</td>
+                <td>@t.Title</td>
+                <td>@t.Amount €</td>
+                <td>@t.Date.ToShortDateString()</td>
+                <td>@t.Type</td>
+                <td>@t.Category</td>
+                <td>@t.Note</td>
+            </tr>
+        }
+    </tbody>
+</table>
