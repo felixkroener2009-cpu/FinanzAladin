@@ -19,5 +19,11 @@ namespace FinanzAladin.Models
         public string Category { get; set; } = string.Empty;
 
         public string Note { get; set; } = string.Empty;
+
+        // Foreign Key
+        public int UserId { get; set; }
+
+        // Navigation Property
+        public User? User { get; set; }
     }
 }

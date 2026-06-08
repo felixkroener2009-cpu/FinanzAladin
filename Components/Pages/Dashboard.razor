@@ -1,79 +1,140 @@
-﻿@page "/dashboard"
+@page "/dashboard"
 @rendermode InteractiveServer
 
 @using FinanzAladin.Services;
 @inject TransactionService TransactionService
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Dashboard</PageTitle>
 
-<div class="container mt-4">
-    <h1>Finanzmanager Dashboard</h1>
-
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>Fehler:</strong> @errorMessage
-            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+@if (!AuthService.IsAuthenticated)
+{
+    <div class="min-vh-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="card border-0 rounded-4 shadow-lg p-5" style="max-width: 500px;">
+            <div class="text-center">
+                <span class="display-1 mb-3" style="font-size: 4rem;">🔐</span>
+                <h3 class="fw-bold mb-3">Zugriff verweigert</h3>
+                <p class="text-muted mb-4">Du musst angemeldet sein, um dein Dashboard zu sehen.</p>
+                <a class="btn btn-primary btn-lg rounded-3" href="/login">🚀 Zur Anmeldeseite</a>
+            </div>
         </div>
-    }
-
-    @if (isLoading)
-    {
-        <div class="alert alert-info" role="alert">
-            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            Daten werden geladen...
-        </div>
-    }
-    else
-    {
-        <div class="row mt-4">
-            <div class="col-md-4 mb-4">
-                <div class="card border-success">
-                    <div class="card-body">
-                        <h5 class="card-title">Kontostand</h5>
-                        <p class="card-text display-5 text-success">
-                            <strong>@balance.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))</strong>
-                        </p>
-                        <small class="text-muted">Einnahmen - Ausgaben</small>
-                    </div>
+    </div>
+}
+else
+{
+    <div class="min-vh-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container py-5">
+            <div class="row mb-5">
+                <div class="col-12">
+                    <h1 class="display-4 fw-bold text-white mb-2">💰 FinanzAladin</h1>
+                    <p class="text-white-50 fs-5">Dein persönlicher Finanzmanager</p>
                 </div>
             </div>
 
-            <div class="col-md-4 mb-4">
-                <div class="card border-success">
-                    <div class="card-body">
-                        <h5 class="card-title">Einnahmen</h5>
-                        <p class="card-text display-5 text-success">
-                            <strong>+@income.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))</strong>
-                        </p>
-                        <small class="text-muted">Gesamte Einnahmen</small>
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>❌ Fehler:</strong> @errorMessage
+                    <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+                </div>
+            }
+
+            @if (isLoading)
+            {
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <div class="spinner-border text-white" role="status">
+                            <span class="visually-hidden">Laden...</span>
+                        </div>
+                        <p class="text-white mt-3">Deine Daten werden geladen...</p>
                     </div>
                 </div>
-            </div>
+            }
+            else
+            {
+                <!-- Statistik-Cards -->
+                <div class="row g-4 mb-5">
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-lg border-0 rounded-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); overflow: hidden;">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <p class="card-text small mb-2 opacity-75">Kontostand</p>
+                                        <h2 class="card-title display-6 fw-bold">
+                                            @balance.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))
+                                        </h2>
+                                    </div>
+                                    <span class="fs-3">💳</span>
+                                </div>
+                                <small class="opacity-75">Einnahmen - Ausgaben</small>
+                            </div>
+                        </div>
+                    </div>
 
-            <div class="col-md-4 mb-4">
-                <div class="card border-danger">
-                    <div class="card-body">
-                        <h5 class="card-title">Ausgaben</h5>
-                        <p class="card-text display-5 text-danger">
-                            <strong>-@expenses.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))</strong>
-                        </p>
-                        <small class="text-muted">Gesamte Ausgaben</small>
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-lg border-0 rounded-4" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); overflow: hidden;">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <p class="card-text small mb-2 opacity-75">Einnahmen</p>
+                                        <h2 class="card-title display-6 fw-bold">
+                                            +@income.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))
+                                        </h2>
+                                    </div>
+                                    <span class="fs-3">📈</span>
+                                </div>
+                                <small class="opacity-75">Gesamte Einnahmen</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-lg border-0 rounded-4" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); overflow: hidden;">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <p class="card-text small mb-2 opacity-75">Ausgaben</p>
+                                        <h2 class="card-title display-6 fw-bold">
+                                            -@expenses.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))
+                                        </h2>
+                                    </div>
+                                    <span class="fs-3">📉</span>
+                                </div>
+                                <small class="opacity-75">Gesamte Ausgaben</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="mt-4 d-flex gap-2">
-            <a class="btn btn-primary btn-lg" href="/add-transaction">
-                <span class="oi oi-plus" aria-hidden="true"></span> Neue Buchung
-            </a>
-            <a class="btn btn-secondary btn-lg" href="/transactions">
-                <span class="oi oi-list" aria-hidden="true"></span> Alle Buchungen anzeigen
-            </a>
+                <!-- Action Buttons -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <a class="btn btn-light btn-lg w-100 rounded-3 shadow fw-semibold" href="/add-transaction">
+                            <span class="me-2">➕</span> Neue Buchung
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a class="btn btn-outline-light btn-lg w-100 rounded-3 fw-semibold" href="/transactions">
+                            <span class="me-2">📋</span> Alle Buchungen
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Info Card -->
+                <div class="card bg-white bg-opacity-10 border-light rounded-4 shadow">
+                    <div class="card-body text-white">
+                        <h5 class="card-title mb-2">💡 Tipp</h5>
+                        <p class="card-text small mb-0">
+                            Verwalte deine Transaktionen einfach und behalte deinen Finanzstatus jederzeit im Überblick. 
+                            Füge neue Buchungen hinzu und analysiere deine Ausgaben!
+                        </p>
+                    </div>
+                </div>
+            }
         </div>
-    }
-</div>
+    </div>
+}
 
 @code {
     private decimal balance = 0;
@@ -84,6 +145,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!AuthService.IsAuthenticated || AuthService.CurrentUser == null)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
         await LoadData();
     }
 
@@ -93,9 +160,10 @@
         errorMessage = null;
         try
         {
-            income = await TransactionService.GetIncomeAsync();
-            expenses = await TransactionService.GetExpensesAsync();
-            balance = await TransactionService.GetBalanceAsync();
+            int userId = AuthService.CurrentUser!.Id;
+            income = await TransactionService.GetIncomeAsync(userId);
+            expenses = await TransactionService.GetExpensesAsync(userId);
+            balance = await TransactionService.GetBalanceAsync(userId);
         }
         catch (Exception ex)
         {

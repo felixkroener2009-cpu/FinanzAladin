@@ -13,22 +13,32 @@ namespace FinanzAladin.Services
             _dbContextFactory = dbContextFactory;
         }
 
-        public async Task<List<Transaction>> GetTransactionsAsync()
+        public async Task<List<Transaction>> GetTransactionsAsync(int userId)
         {
-            using var context = _dbContextFactory.CreateDbContext();
+            try
+            {
+                using var context = _dbContextFactory.CreateDbContext();
 
-            return await context.Transactions
-                .AsNoTracking()
-                .OrderByDescending(t => t.Date)
-                .ToListAsync();
+                return await context.Transactions
+                    .AsNoTracking()
+                    .Where(t => t.UserId == userId)
+                    .OrderByDescending(t => t.Date)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error in GetTransactionsAsync: {ex.Message}");
+                throw;
+            }
         }
 
-        public List<Transaction> GetTransactions()
+        public List<Transaction> GetTransactions(int userId)
         {
             using var context = _dbContextFactory.CreateDbContext();
 
             return context.Transactions
                 .AsNoTracking()
+                .Where(t => t.UserId == userId)
                 .OrderByDescending(t => t.Date)
                 .ToList();
         }
@@ -47,10 +57,10 @@ namespace FinanzAladin.Services
             context.SaveChanges();
         }
 
-        public async Task DeleteTransactionAsync(int id)
+        public async Task DeleteTransactionAsync(int id, int userId)
         {
             using var context = _dbContextFactory.CreateDbContext();
-            var transaction = await context.Transactions.FirstOrDefaultAsync(t => t.Id == id);
+            var transaction = await context.Transactions.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
             if (transaction != null)
             {
                 context.Transactions.Remove(transaction);
@@ -58,10 +68,10 @@ namespace FinanzAladin.Services
             }
         }
 
-        public void DeleteTransaction(int id)
+        public void DeleteTransaction(int id, int userId)
         {
             using var context = _dbContextFactory.CreateDbContext();
-            var transaction = context.Transactions.FirstOrDefault(t => t.Id == id);
+            var transaction = context.Transactions.FirstOrDefault(t => t.Id == id && t.UserId == userId);
             if (transaction != null)
             {
                 context.Transactions.Remove(transaction);
@@ -69,52 +79,52 @@ namespace FinanzAladin.Services
             }
         }
 
-        public async Task<decimal> GetIncomeAsync()
+        public async Task<decimal> GetIncomeAsync(int userId)
         {
             using var context = _dbContextFactory.CreateDbContext();
             return await context.Transactions
                 .AsNoTracking()
-                .Where(t => t.Type == TransactionType.Income)
+                .Where(t => t.UserId == userId && t.Type == TransactionType.Income)
                 .SumAsync(t => t.Amount);
         }
 
-        public decimal GetIncome()
+        public decimal GetIncome(int userId)
         {
             using var context = _dbContextFactory.CreateDbContext();
             return context.Transactions
                 .AsNoTracking()
-                .Where(t => t.Type == TransactionType.Income)
+                .Where(t => t.UserId == userId && t.Type == TransactionType.Income)
                 .Sum(t => t.Amount);
         }
 
-        public async Task<decimal> GetExpensesAsync()
+        public async Task<decimal> GetExpensesAsync(int userId)
         {
             using var context = _dbContextFactory.CreateDbContext();
             return await context.Transactions
                 .AsNoTracking()
-                .Where(t => t.Type == TransactionType.Expense)
+                .Where(t => t.UserId == userId && t.Type == TransactionType.Expense)
                 .SumAsync(t => t.Amount);
         }
 
-        public decimal GetExpenses()
+        public decimal GetExpenses(int userId)
         {
             using var context = _dbContextFactory.CreateDbContext();
             return context.Transactions
                 .AsNoTracking()
-                .Where(t => t.Type == TransactionType.Expense)
+                .Where(t => t.UserId == userId && t.Type == TransactionType.Expense)
                 .Sum(t => t.Amount);
         }
 
-        public async Task<decimal> GetBalanceAsync()
+        public async Task<decimal> GetBalanceAsync(int userId)
         {
-            var income = await GetIncomeAsync();
-            var expenses = await GetExpensesAsync();
+            var income = await GetIncomeAsync(userId);
+            var expenses = await GetExpensesAsync(userId);
             return income - expenses;
         }
 
-        public decimal GetBalance()
+        public decimal GetBalance(int userId)
         {
-            return GetIncome() - GetExpenses();
+            return GetIncome(userId) - GetExpenses(userId);
         }
     }
 }

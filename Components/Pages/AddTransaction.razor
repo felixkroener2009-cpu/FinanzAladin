@@ -4,92 +4,203 @@
 @using FinanzAladin.Models;
 @using FinanzAladin.Services;
 @inject TransactionService TransactionService
+@inject AuthService AuthService
 @inject NavigationManager NavigationManager
 
 <PageTitle>Transaktion hinzufügen</PageTitle>
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8">
-            <h1>Transaktion hinzufügen</h1>
-
-            <EditForm Model="transaction" OnValidSubmit="SaveTransaction" class="mt-4">
-                <DataAnnotationsValidator />
-                <ValidationSummary class="alert alert-danger" role="alert" />
-
-                <div class="mb-3">
-                    <label class="form-label" for="title">Titel: <span class="text-danger">*</span></label>
-                    <InputText class="form-control" id="title" @bind-Value="transaction.Title" placeholder="z.B. Gehalt, Einkauf..." />
-                    <ValidationMessage For="() => transaction.Title" class="text-danger" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label" for="amount">Betrag (€): <span class="text-danger">*</span></label>
-                    <InputNumber class="form-control" id="amount" @bind-Value="transaction.Amount" placeholder="0.00" />
-                    <ValidationMessage For="() => transaction.Amount" class="text-danger" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label" for="date">Datum: <span class="text-danger">*</span></label>
-                    <InputDate class="form-control" id="date" @bind-Value="transaction.Date" />
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label" for="type">Typ: <span class="text-danger">*</span></label>
-                        <InputSelect class="form-select" id="type" @bind-Value="transaction.Type">
-                            <option value="@TransactionType.Expense">Ausgabe</option>
-                            <option value="@TransactionType.Income">Einnahme</option>
-                        </InputSelect>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label" for="category">Kategorie:</label>
-                        <InputText class="form-control" id="category" @bind-Value="transaction.Category" placeholder="z.B. Lebensmittel..." />
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label" for="note">Notiz:</label>
-                    <InputTextArea class="form-control" id="note" @bind-Value="transaction.Note" placeholder="Optionale Anmerkung..." rows="3" />
-                </div>
-
-                <div class="d-flex gap-2">
-                    <button class="btn btn-primary" type="submit" disabled="@isSaving">
-                        @if (isSaving)
-                        {
-                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            <span>Wird gespeichert...</span>
-                        }
-                        else
-                        {
-                            <span>Speichern</span>
-                        }
-                    </button>
-                    <button class="btn btn-secondary" type="button" @onclick="Cancel" disabled="@isSaving">Abbrechen</button>
-                </div>
-            </EditForm>
+@if (!AuthService.IsAuthenticated)
+{
+    <div class="min-vh-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="card border-0 rounded-4 shadow-lg p-5" style="max-width: 500px;">
+            <div class="text-center">
+                <span class="display-1 mb-3" style="font-size: 4rem;">🔐</span>
+                <h3 class="fw-bold mb-3">Zugriff verweigert</h3>
+                <p class="text-muted mb-4">Du musst angemeldet sein, um eine Buchung zu erstellen.</p>
+                <a class="btn btn-primary btn-lg rounded-3" href="/login">🚀 Zur Anmeldeseite</a>
+            </div>
         </div>
     </div>
-</div>
+}
+else
+{
+    <div class="min-vh-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container py-5">
+            <div class="row mb-5">
+                <div class="col-12">
+                    <h1 class="display-4 fw-bold text-white mb-2">✏️ Neue Buchung</h1>
+                    <p class="text-white-50 fs-5">Füge eine neue Transaktion hinzu</p>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="card shadow-lg border-0 rounded-4">
+                        <div class="card-body p-5">
+                            <EditForm Model="transaction" OnValidSubmit="SaveTransaction" class="needs-validation">
+                                <DataAnnotationsValidator />
+
+                                @if (validationErrors.Any())
+                                {
+                                    <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+                                        <strong>⚠️ Eingabefehler:</strong>
+                                        <ul class="mb-0 mt-2">
+                                            @foreach (var error in validationErrors)
+                                            {
+                                                <li>@error</li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+
+                                <!-- Titel -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold" for="title">
+                                        📝 Titel <span class="text-danger">*</span>
+                                    </label>
+                                    <InputText 
+                                        class="form-control form-control-lg rounded-3" 
+                                        id="title" 
+                                        @bind-Value="transaction.Title" 
+                                        placeholder="z.B. Gehalt, Einkauf..." 
+                                        style="border-color: #667eea;" />
+                                    <ValidationMessage For="() => transaction.Title" class="text-danger small mt-2" />
+                                </div>
+
+                                <!-- Betrag -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold" for="amount">
+                                        💵 Betrag (€) <span class="text-danger">*</span>
+                                    </label>
+                                    <InputNumber 
+                                        class="form-control form-control-lg rounded-3" 
+                                        id="amount" 
+                                        @bind-Value="transaction.Amount" 
+                                        placeholder="0.00"
+                                        style="border-color: #667eea;" />
+                                    <ValidationMessage For="() => transaction.Amount" class="text-danger small mt-2" />
+                                </div>
+
+                                <!-- Datum -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold" for="date">
+                                        📅 Datum <span class="text-danger">*</span>
+                                    </label>
+                                    <InputDate 
+                                        class="form-control form-control-lg rounded-3" 
+                                        id="date" 
+                                        @bind-Value="transaction.Date"
+                                        style="border-color: #667eea;" />
+                                </div>
+
+                                <!-- Typ und Kategorie -->
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        <label class="form-label fw-semibold" for="type">
+                                            🏷️ Typ <span class="text-danger">*</span>
+                                        </label>
+                                        <InputSelect 
+                                            class="form-select form-select-lg rounded-3" 
+                                            id="type" 
+                                            @bind-Value="transaction.Type"
+                                            style="border-color: #667eea;">
+                                            <option value="@TransactionType.Expense">📉 Ausgabe</option>
+                                            <option value="@TransactionType.Income">📈 Einnahme</option>
+                                        </InputSelect>
+                                    </div>
+
+                                    <div class="col-md-6 mb-4">
+                                        <label class="form-label fw-semibold" for="category">
+                                            🏷️ Kategorie
+                                        </label>
+                                        <InputText 
+                                            class="form-control form-control-lg rounded-3" 
+                                            id="category" 
+                                            @bind-Value="transaction.Category" 
+                                            placeholder="z.B. Lebensmittel..."
+                                            style="border-color: #667eea;" />
+                                    </div>
+                                </div>
+
+                                <!-- Notiz -->
+                                <div class="mb-5">
+                                    <label class="form-label fw-semibold" for="note">
+                                        📝 Notiz
+                                    </label>
+                                    <InputTextArea 
+                                        class="form-control form-control-lg rounded-3" 
+                                        id="note" 
+                                        @bind-Value="transaction.Note" 
+                                        placeholder="Optionale Anmerkung..." 
+                                        rows="3"
+                                        style="border-color: #667eea;" />
+                                </div>
+
+                                <!-- Buttons -->
+                                <div class="d-flex gap-3">
+                                    <button 
+                                        class="btn btn-lg rounded-3 fw-semibold flex-grow-1" 
+                                        type="submit" 
+                                        disabled="@isSaving"
+                                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                                        @if (isSaving)
+                                        {
+                                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                            <span>Wird gespeichert...</span>
+                                        }
+                                        else
+                                        {
+                                            <span>✅ Speichern</span>
+                                        }
+                                    </button>
+                                    <button 
+                                        class="btn btn-lg btn-outline-secondary rounded-3 fw-semibold" 
+                                        type="button" 
+                                        @onclick="Cancel" 
+                                        disabled="@isSaving">
+                                        ❌ Abbrechen
+                                    </button>
+                                </div>
+                            </EditForm>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     private FinanzAladin.Models.Transaction transaction = new();
     private bool isSaving = false;
+    private List<string> validationErrors = new();
 
     private async Task SaveTransaction()
     {
+        if (!AuthService.IsAuthenticated || AuthService.CurrentUser == null)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        validationErrors.Clear();
         isSaving = true;
         try
         {
+            // Set UserId
+            transaction.UserId = AuthService.CurrentUser.Id;
+
             // Ensure DateTime is in UTC for Npgsql compatibility
             transaction.Date = DateTime.SpecifyKind(transaction.Date, DateTimeKind.Utc);
             await TransactionService.AddTransactionAsync(transaction);
-            NavigationManager.NavigateTo("/transactions");
+            Console.WriteLine("✅ Transaction saved successfully");
+            NavigationManager.NavigateTo("/dashboard");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Fehler beim Speichern: {ex.Message}");
+            Console.WriteLine($"❌ Fehler beim Speichern: {ex.Message}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
+            validationErrors.Add($"Fehler beim Speichern: {ex.Message}");
         }
         finally
         {

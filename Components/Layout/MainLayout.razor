@@ -1,9 +1,109 @@
 ﻿@inherits LayoutComponentBase
+@using FinanzAladin.Services
+@implements IAsyncDisposable
+@inject AuthService AuthService
 
-@Body
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
+    <div class="container-fluid px-4">
+        <!-- Brand -->
+        <a class="navbar-brand fw-bold fs-4 d-flex align-items-center" href="/" style="color: white; text-decoration: none;">
+            <span class="fs-2 me-2">💰</span>
+            <span>FinanzAladin</span>
+        </a>
 
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+        <!-- Toggler for Mobile -->
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Nav Items -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            @if (AuthService.IsAuthenticated)
+            {
+                <ul class="navbar-nav ms-auto gap-2 align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold" href="/" style="color: rgba(255, 255, 255, 0.8); text-decoration: none; transition: all 0.3s;">
+                            <span class="me-2">🏠</span> Startseite
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold" href="/dashboard" style="color: rgba(255, 255, 255, 0.8); text-decoration: none; transition: all 0.3s;">
+                            <span class="me-2">📊</span> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold" href="/add-transaction" style="color: rgba(255, 255, 255, 0.8); text-decoration: none; transition: all 0.3s;">
+                            <span class="me-2">➕</span> Neue Buchung
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold" href="/transactions" style="color: rgba(255, 255, 255, 0.8); text-decoration: none; transition: all 0.3s;">
+                            <span class="me-2">📋</span> Alle Buchungen
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link fw-semibold dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: rgba(255, 255, 255, 0.8);">
+                            <span class="me-2">👤</span> @(AuthService.CurrentUser?.FullName ?? AuthService.CurrentUser?.Username ?? "Benutzer")
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="#"><span class="me-2">⚙️</span> Einstellungen</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" @onclick="HandleLogout"><span class="me-2">🚪</span> Abmelden</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            }
+            else
+            {
+                <ul class="navbar-nav ms-auto gap-2">
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold" href="/login" style="color: rgba(255, 255, 255, 0.8); text-decoration: none;">
+                            <span class="me-2">🚀</span> Anmelden
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold" href="/register" style="color: white; text-decoration: none; background: rgba(255, 255, 255, 0.2); padding: 8px 16px; border-radius: 6px;">
+                            <span class="me-2">✨</span> Registrieren
+                        </a>
+                    </li>
+                </ul>
+            }
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="page-wrapper">
+    @Body
 </div>
+
+<!-- Error Boundary -->
+<div id="blazor-error-ui" data-nosnippet style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #ff4444; color: white; padding: 20px; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2); z-index: 1000;">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        <div>
+            <strong>⚠️ Ein Fehler ist aufgetreten!</strong>
+            <p class="mb-0">Bitte laden Sie die Seite neu oder versuchen Sie es später erneut.</p>
+        </div>
+        <button class="btn btn-light btn-sm rounded-2" onclick="location.reload();">🔄 Neuladen</button>
+    </div>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        AuthService.OnAuthStateChanged += StateHasChanged;
+    }
+
+    private async Task HandleLogout()
+    {
+        AuthService.Logout();
+        // Redirect to home page
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        AuthService.OnAuthStateChanged -= StateHasChanged;
+    }
+}
+

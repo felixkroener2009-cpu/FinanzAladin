@@ -1,90 +1,189 @@
-﻿@page "/transactions"
+@page "/transactions"
 @rendermode InteractiveServer
 @using FinanzAladin.Models;
 @using FinanzAladin.Services;
 @inject TransactionService TransactionService
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
 
 <PageTitle>Alle Buchungen</PageTitle>
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Alle Buchungen</h1>
-        <a class="btn btn-primary" href="/add-transaction">+ Neue Buchung</a>
+@if (!AuthService.IsAuthenticated)
+{
+    <div class="min-vh-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="card border-0 rounded-4 shadow-lg p-5" style="max-width: 500px;">
+            <div class="text-center">
+                <span class="display-1 mb-3" style="font-size: 4rem;">🔐</span>
+                <h3 class="fw-bold mb-3">Zugriff verweigert</h3>
+                <p class="text-muted mb-4">Du musst angemeldet sein, um deine Buchungen zu sehen.</p>
+                <a class="btn btn-primary btn-lg rounded-3" href="/login">🚀 Zur Anmeldeseite</a>
+            </div>
+        </div>
     </div>
+}
+else
+{
+    <div class="min-vh-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container py-5">
+            <!-- Header -->
+            <div class="row mb-5 align-items-center">
+                <div class="col-12">
+                    <h1 class="display-4 fw-bold text-white mb-2">📋 Alle Buchungen</h1>
+                    <p class="text-white-50 fs-5">Verwalte deine Transaktionen</p>
+                </div>
+            </div>
 
-    @if (isLoading)
-    {
-        <div class="alert alert-info" role="alert">
-            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            Laden...
-        </div>
-    }
-    else if (transactions == null || !transactions.Any())
-    {
-        <div class="alert alert-warning" role="alert">
-            Keine Buchungen vorhanden. <a href="/add-transaction">Erstelle deine erste Buchung</a>
-        </div>
-    }
-    else
-    {
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>Titel</th>
-                        <th>Betrag</th>
-                        <th>Datum</th>
-                        <th>Art</th>
-                        <th>Kategorie</th>
-                        <th>Notiz</th>
-                        <th class="text-end">Aktion</th>
-                    </tr>
-                </thead>
+            <!-- Button -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <a class="btn btn-light btn-lg rounded-3 shadow fw-semibold" href="/add-transaction">
+                        <span class="me-2">➕</span> Neue Buchung
+                    </a>
+                </div>
+            </div>
 
-    <tbody>
-        @foreach (var transaction in transactions)
-        {
-            <tr>
-                <td><strong>@transaction.Title</strong></td>
-                <td>
-                    @if (transaction.Type == TransactionType.Income)
-                    {
-                        <span class="badge bg-success">+@transaction.Amount €</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-danger">-@transaction.Amount €</span>
-                    }
-                </td>
-                <td>@transaction.Date.ToShortDateString()</td>
-                <td>
-                    @if (transaction.Type == TransactionType.Income)
-                    {
-                        <span class="badge bg-success">Einnahme</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-warning">Ausgabe</span>
-                    }
-                </td>
-                <td>@transaction.Category</td>
-                <td>@(string.IsNullOrEmpty(transaction.Note) ? "-" : transaction.Note)</td>
-                <td class="text-end">
-                    <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(transaction.Id)" disabled="@isDeleting">
-                        @if (isDeleting && deletingId == transaction.Id)
-                        {
-                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                        }
-                        Löschen
-                    </button>
-                </td>
-            </tr>
-        }
-    </tbody>
-            </table>
+            <!-- Content -->
+            @if (isLoading)
+            {
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <div class="spinner-border text-white" role="status">
+                            <span class="visually-hidden">Laden...</span>
+                        </div>
+                        <p class="text-white mt-3">Deine Buchungen werden geladen...</p>
+                    </div>
+                </div>
+            }
+            else if (transactions == null || !transactions.Any())
+            {
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card bg-white bg-opacity-95 border-0 rounded-4 shadow-lg p-5 text-center">
+                            <span class="fs-1 mb-3">📭</span>
+                            <h5 class="card-title fw-bold mb-3">Keine Buchungen vorhanden</h5>
+                            <p class="card-text text-muted mb-4">Du hast noch keine Transaktionen erfasst.</p>
+                            <a href="/add-transaction" class="btn btn-primary btn-lg rounded-3">
+                                🚀 Deine erste Buchung erstellen
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card border-0 rounded-4 shadow-lg overflow-hidden">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light border-bottom-3">
+                                        <tr>
+                                            <th class="fw-bold ps-4 py-3">📝 Titel</th>
+                                            <th class="fw-bold py-3">💵 Betrag</th>
+                                            <th class="fw-bold py-3">📅 Datum</th>
+                                            <th class="fw-bold py-3">🏷️ Art</th>
+                                            <th class="fw-bold py-3">🏷️ Kategorie</th>
+                                            <th class="fw-bold py-3">📄 Notiz</th>
+                                            <th class="fw-bold py-3 text-end pe-4">⚙️ Aktion</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var transaction in transactions)
+                                        {
+                                            <tr class="align-middle">
+                                                <td class="ps-4 fw-semibold">@transaction.Title</td>
+                                                <td>
+                                                    @if (transaction.Type == TransactionType.Income)
+                                                    {
+                                                        <span class="badge bg-success fs-6">
+                                                            📈 +@transaction.Amount.ToString("F2") €
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-danger fs-6">
+                                                            📉 -@transaction.Amount.ToString("F2") €
+                                                        </span>
+                                                    }
+                                                </td>
+                                                <td class="text-muted">@transaction.Date.ToShortDateString()</td>
+                                                <td>
+                                                    @if (transaction.Type == TransactionType.Income)
+                                                    {
+                                                        <span class="badge bg-success-light text-success p-2">Einnahme</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-warning-light text-warning p-2">Ausgabe</span>
+                                                    }
+                                                </td>
+                                                <td class="text-muted">@(string.IsNullOrEmpty(transaction.Category) ? "-" : transaction.Category)</td>
+                                                <td class="text-muted">
+                                                    @if (string.IsNullOrEmpty(transaction.Note))
+                                                    {
+                                                        <span>-</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span title="@transaction.Note">@(transaction.Note.Length > 20 ? transaction.Note.Substring(0, 20) + "..." : transaction.Note)</span>
+                                                    }
+                                                </td>
+                                                <td class="text-end pe-4">
+                                                    <button 
+                                                        class="btn btn-sm btn-danger rounded-2" 
+                                                        @onclick="() => ConfirmDelete(transaction.Id)" 
+                                                        disabled="@(isDeleting && deletingId == transaction.Id)">
+                                                        @if (isDeleting && deletingId == transaction.Id)
+                                                        {
+                                                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span>🗑️ Löschen</span>
+                                                        }
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Stats Footer -->
+                        <div class="row mt-4 g-2">
+                            <div class="col-md-4">
+                                <div class="card bg-white bg-opacity-10 border-light rounded-3 text-white">
+                                    <div class="card-body">
+                                        <p class="card-text small opacity-75 mb-1">Insgesamt Buchungen</p>
+                                        <h5 class="card-title fw-bold">@transactions.Count</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-white bg-opacity-10 border-light rounded-3 text-white">
+                                    <div class="card-body">
+                                        <p class="card-text small opacity-75 mb-1">Einnahmen</p>
+                                        <h5 class="card-title fw-bold text-success">+@transactions.Where(t => t.Type == TransactionType.Income).Sum(t => t.Amount).ToString("F2") €</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-white bg-opacity-10 border-light rounded-3 text-white">
+                                    <div class="card-body">
+                                        <p class="card-text small opacity-75 mb-1">Ausgaben</p>
+                                        <h5 class="card-title fw-bold text-danger">-@transactions.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount).ToString("F2") €</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
-    }
-</div>
+    </div>
+}
 
 @code {
     private List<FinanzAladin.Models.Transaction> transactions = new();
@@ -94,14 +193,31 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!AuthService.IsAuthenticated || AuthService.CurrentUser == null)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
         await LoadTransactions();
     }
 
     private async Task LoadTransactions()
     {
         isLoading = true;
-        transactions = await TransactionService.GetTransactionsAsync();
-        isLoading = false;
+        try
+        {
+            int userId = AuthService.CurrentUser!.Id;
+            transactions = await TransactionService.GetTransactionsAsync(userId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading transactions: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private async Task ConfirmDelete(int id)
@@ -118,7 +234,8 @@
         deletingId = id;
         try
         {
-            await TransactionService.DeleteTransactionAsync(id);
+            int userId = AuthService.CurrentUser!.Id;
+            await TransactionService.DeleteTransactionAsync(id, userId);
             await LoadTransactions();
         }
         finally
@@ -127,6 +244,4 @@
             deletingId = 0;
         }
     }
-
-    @inject IJSRuntime JS
 }

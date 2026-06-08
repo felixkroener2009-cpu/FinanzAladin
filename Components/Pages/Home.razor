@@ -1,9 +1,114 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>FinanzAladin - Startseite</PageTitle>
 
-<h1>Willkommen beim FinanzAladin</h1>
+<div class="min-vh-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container py-5">
+        <!-- Hero Section -->
+        <div class="row align-items-center min-vh-100">
+            <div class="col-lg-6 text-white mb-5 mb-lg-0">
+                <div class="mb-5">
+                    <span class="display-1 mb-3" style="font-size: 5rem;">💰</span>
+                    <h1 class="display-3 fw-bold mb-4">FinanzAladin</h1>
+                    <p class="fs-5 opacity-90 lh-lg mb-4">
+                        Dein persönlicher Finanzmanager für einfaches und effizientes Budgetmanagement. 
+                        Verwalte deine Einnahmen und Ausgaben mit Leichtigkeit!
+                    </p>
+                </div>
 
-<p>Verwalte deine Einnahmen und Ausgaben.</p>
+                <!-- Features -->
+                <div class="mb-5">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="fs-4 me-3">📊</span>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Dashboard</h6>
+                            <small class="opacity-75">Übersicht deiner Finanzen auf einen Blick</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="fs-4 me-3">➕</span>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Buchungen verwalten</h6>
+                            <small class="opacity-75">Einfaches Hinzufügen von Ein- und Ausgaben</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="fs-4 me-3">📋</span>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Transaktionsverlauf</h6>
+                            <small class="opacity-75">Alle deine Transaktionen in einer übersichtlichen Tabelle</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="fs-4 me-3">💡</span>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Schnelle Analyse</h6>
+                            <small class="opacity-75">Behalte dein Budget unter Kontrolle</small>
+                        </div>
+                    </div>
+                </div>
 
-<a class="btn btn-primary" href="/dashboard">Zum Dashboard</a>
+                <!-- CTA Buttons -->
+                <div class="d-flex gap-3 flex-wrap">
+                    <a class="btn btn-light btn-lg rounded-3 fw-semibold shadow" href="/dashboard">
+                        🚀 Zum Dashboard
+                    </a>
+                    <a class="btn btn-outline-light btn-lg rounded-3 fw-semibold" href="/add-transaction">
+                        ➕ Erste Buchung erstellen
+                    </a>
+                </div>
+            </div>
+
+            <!-- Illustration Area -->
+            <div class="col-lg-6 text-center">
+                <div class="card bg-white bg-opacity-10 border-0 rounded-4 p-5 shadow-lg" style="backdrop-filter: blur(10px);">
+                    <div class="display-1 mb-4">📈</div>
+                    <h3 class="text-white fw-bold mb-3">Sei in Kontrolle</h3>
+                    <p class="text-white-50 mb-4">
+                        Mit FinanzAladin behältst du deine Finanzen jederzeit im Überblick. 
+                        Dokumentiere jede Transaktion und analysiere deine Ausgabenmuster.
+                    </p>
+                    <div class="row g-3 mt-4">
+                        <div class="col-6">
+                            <div class="card bg-white bg-opacity-20 border-0 rounded-3 p-4">
+                                <span class="fs-3 mb-2">100%</span>
+                                <small class="text-white-50">Kostenlos & Privat</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-white bg-opacity-20 border-0 rounded-3 p-4">
+                                <span class="fs-3 mb-2">⚡</span>
+                                <small class="text-white-50">Schnell & Zuverlässig</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="row mt-5 g-4">
+            <div class="col-md-4">
+                <div class="card bg-white bg-opacity-95 border-0 rounded-4 shadow h-100 p-4">
+                    <div class="fs-1 mb-3">🎯</div>
+                    <h5 class="fw-bold mb-2">Einfach zu bedienen</h5>
+                    <p class="text-muted small">Keine komplizierten Menüs oder versteckte Funktionen. Alles ist intuitiv gestaltet.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-white bg-opacity-95 border-0 rounded-4 shadow h-100 p-4">
+                    <div class="fs-1 mb-3">🔒</div>
+                    <h5 class="fw-bold mb-2">Sicher</h5>
+                    <p class="text-muted small">Deine Daten sind geschützt und werden in einer sicheren Datenbank gespeichert.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-white bg-opacity-95 border-0 rounded-4 shadow h-100 p-4">
+                    <div class="fs-1 mb-3">📱</div>
+                    <h5 class="fw-bold mb-2">Responsive</h5>
+                    <p class="text-muted small">Funktioniert auf allen Geräten - Desktop, Tablet und Smartphone.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

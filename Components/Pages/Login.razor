@@ -1,0 +1,179 @@
+@page "/login"
+@rendermode InteractiveServer
+@using FinanzAladin.Services
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Login - FinanzAladin</PageTitle>
+
+@if (AuthService.IsAuthenticated)
+{
+    <div class="min-vh-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="card border-0 rounded-4 shadow-lg p-5" style="max-width: 500px;">
+            <div class="text-center">
+                <span class="display-1 mb-3" style="font-size: 4rem;">✅</span>
+                <h3 class="fw-bold mb-3">Bereits angemeldet</h3>
+                <p class="text-muted mb-4">Du bist bereits angemeldet. Du wirst weitergeleitet...</p>
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Wird weitergeleitet...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="min-vh-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-5">
+                    <div class="card border-0 rounded-4 shadow-lg overflow-hidden">
+                        <!-- Card Header -->
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 3rem 2rem; text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">💰</div>
+                            <h2 class="fw-bold mb-2">FinanzAladin</h2>
+                            <p class="opacity-75 mb-0">Anmelden</p>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body p-4">
+                            @if (!string.IsNullOrEmpty(errorMessage))
+                            {
+                                <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+                                    <strong>❌ Fehler:</strong> @errorMessage
+                                    <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(successMessage))
+                            {
+                                <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+                                    <strong>✅ Erfolg:</strong> @successMessage
+                                    <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+                                </div>
+                            }
+
+                            <form @onsubmit="HandleLogin">
+                                <!-- Username/Email -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">👤 Email oder Benutzername</label>
+                                    <input type="text" 
+                                           class="form-control form-control-lg rounded-3" 
+                                           @bind="usernameOrEmail" 
+                                           placeholder="max@example.com oder max123"
+                                           disabled="@isLoading"
+                                           style="border-color: #667eea;" />
+                                </div>
+
+                                <!-- Password -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">🔐 Passwort</label>
+                                    <input type="password" 
+                                           class="form-control form-control-lg rounded-3" 
+                                           @bind="password" 
+                                           placeholder="••••••••"
+                                           disabled="@isLoading"
+                                           style="border-color: #667eea;" />
+                                </div>
+
+                                <!-- Login Button -->
+                                <button type="submit" 
+                                        class="btn btn-lg w-100 rounded-3 fw-semibold text-white" 
+                                        disabled="@isLoading"
+                                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                                    @if (isLoading)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        <span>Wird angemeldet...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>🚀 Anmelden</span>
+                                    }
+                                </button>
+                            </form>
+
+                            <!-- Divider -->
+                            <div class="my-4 text-center">
+                                <span class="text-muted">oder</span>
+                            </div>
+
+                            <!-- Register Link -->
+                            <a href="/register" class="btn btn-lg w-100 btn-outline-primary rounded-3 fw-semibold">
+                                ✨ Neues Konto erstellen
+                            </a>
+
+                            <!-- Back to Home -->
+                            <div class="text-center mt-3">
+                                <a href="/" class="text-decoration-none small" style="color: #667eea;">
+                                    ← Zur Startseite
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info Card -->
+                    <div class="card bg-white bg-opacity-10 border-light rounded-3 mt-4 shadow" style="color: white;">
+                        <div class="card-body">
+                            <p class="card-text small mb-0">
+                                <strong>💡 Demo-Konto:</strong><br>
+                                Email: demo@example.com<br>
+                                Passwort: demo123
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private string usernameOrEmail = "";
+    private string password = "";
+    private string errorMessage = "";
+    private string successMessage = "";
+    private bool isLoading = false;
+
+    protected override void OnInitialized()
+    {
+        // Wenn bereits angemeldet, weitergeleitet zum Dashboard
+        if (AuthService.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/dashboard", replace: true);
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        if (string.IsNullOrWhiteSpace(usernameOrEmail) || string.IsNullOrWhiteSpace(password))
+        {
+            errorMessage = "Bitte füllen Sie alle Felder aus!";
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = "";
+        successMessage = "";
+
+        try
+        {
+            var (success, message) = await AuthService.LoginAsync(usernameOrEmail, password);
+
+            if (success)
+            {
+                successMessage = message;
+                await Task.Delay(1500);
+                NavigationManager.NavigateTo("/dashboard", forceLoad: true);
+            }
+            else
+            {
+                errorMessage = message;
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
