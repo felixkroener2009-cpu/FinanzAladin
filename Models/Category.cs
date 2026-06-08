@@ -1,4 +1,6 @@
-﻿namespace FinanzAladin.Classes
+﻿using FinanzAladin.Models;
+
+namespace FinanzAladin.Classes
 {
     public class Category
     {

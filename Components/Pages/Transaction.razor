@@ -1,37 +1,132 @@
 ﻿@page "/transactions"
-@using FinanzAladin.Models
-@using FinanzAladin.Services
+@rendermode InteractiveServer
+@using FinanzAladin.Models;
+@using FinanzAladin.Services;
 @inject TransactionService TransactionService
 
-<h1>Alle Buchungen</h1>
+<PageTitle>Alle Buchungen</PageTitle>
 
-<a class="btn btn-primary mb-3" href="/add-transaction">Neue Buchung</a>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Alle Buchungen</h1>
+        <a class="btn btn-primary" href="/add-transaction">+ Neue Buchung</a>
+    </div>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Titel</th>
-            <th>Betrag</th>
-            <th>Datum</th>
-            <th>Art</th>
-            <th>Kategorie</th>
-            <th>Notiz</th>
-        </tr>
-    </thead>
+    @if (isLoading)
+    {
+        <div class="alert alert-info" role="alert">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Laden...
+        </div>
+    }
+    else if (transactions == null || !transactions.Any())
+    {
+        <div class="alert alert-warning" role="alert">
+            Keine Buchungen vorhanden. <a href="/add-transaction">Erstelle deine erste Buchung</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Titel</th>
+                        <th>Betrag</th>
+                        <th>Datum</th>
+                        <th>Art</th>
+                        <th>Kategorie</th>
+                        <th>Notiz</th>
+                        <th class="text-end">Aktion</th>
+                    </tr>
+                </thead>
 
     <tbody>
-        @foreach (var t in TransactionService.Transaction)
+        @foreach (var transaction in transactions)
         {
             <tr>
-                <td>@t.Id</td>
-                <td>@t.Title</td>
-                <td>@t.Amount €</td>
-                <td>@t.Date.ToShortDateString()</td>
-                <td>@t.Type</td>
-                <td>@t.Category</td>
-                <td>@t.Note</td>
+                <td><strong>@transaction.Title</strong></td>
+                <td>
+                    @if (transaction.Type == TransactionType.Income)
+                    {
+                        <span class="badge bg-success">+@transaction.Amount €</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">-@transaction.Amount €</span>
+                    }
+                </td>
+                <td>@transaction.Date.ToShortDateString()</td>
+                <td>
+                    @if (transaction.Type == TransactionType.Income)
+                    {
+                        <span class="badge bg-success">Einnahme</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning">Ausgabe</span>
+                    }
+                </td>
+                <td>@transaction.Category</td>
+                <td>@(string.IsNullOrEmpty(transaction.Note) ? "-" : transaction.Note)</td>
+                <td class="text-end">
+                    <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(transaction.Id)" disabled="@isDeleting">
+                        @if (isDeleting && deletingId == transaction.Id)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        }
+                        Löschen
+                    </button>
+                </td>
             </tr>
         }
     </tbody>
-</table>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private List<FinanzAladin.Models.Transaction> transactions = new();
+    private bool isLoading = true;
+    private bool isDeleting = false;
+    private int deletingId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTransactions();
+    }
+
+    private async Task LoadTransactions()
+    {
+        isLoading = true;
+        transactions = await TransactionService.GetTransactionsAsync();
+        isLoading = false;
+    }
+
+    private async Task ConfirmDelete(int id)
+    {
+        if (await JS.InvokeAsync<bool>("confirm", "Möchtest du diese Buchung wirklich löschen?"))
+        {
+            await DeleteTransaction(id);
+        }
+    }
+
+    private async Task DeleteTransaction(int id)
+    {
+        isDeleting = true;
+        deletingId = id;
+        try
+        {
+            await TransactionService.DeleteTransactionAsync(id);
+            await LoadTransactions();
+        }
+        finally
+        {
+            isDeleting = false;
+            deletingId = 0;
+        }
+    }
+
+    @inject IJSRuntime JS
+}

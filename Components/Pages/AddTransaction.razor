@@ -1,56 +1,104 @@
-﻿@page "/add-transaction"
-@using FinanzAladin.Classes
-@using FinanzAladin.Service
+@page "/add-transaction"
+@rendermode InteractiveServer
+
+@using FinanzAladin.Models;
+@using FinanzAladin.Services;
 @inject TransactionService TransactionService
-@inject NavigationManager Navigation
+@inject NavigationManager NavigationManager
 
-<h1>Neue Buchung hinzufügen</h1>
+<PageTitle>Transaktion hinzufügen</PageTitle>
 
-<div class="mb-3">
-    <label>Titel</label>
-    <input class="form-control" @bind="transaction.Title" />
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h1>Transaktion hinzufügen</h1>
+
+            <EditForm Model="transaction" OnValidSubmit="SaveTransaction" class="mt-4">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="alert alert-danger" role="alert" />
+
+                <div class="mb-3">
+                    <label class="form-label" for="title">Titel: <span class="text-danger">*</span></label>
+                    <InputText class="form-control" id="title" @bind-Value="transaction.Title" placeholder="z.B. Gehalt, Einkauf..." />
+                    <ValidationMessage For="() => transaction.Title" class="text-danger" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="amount">Betrag (€): <span class="text-danger">*</span></label>
+                    <InputNumber class="form-control" id="amount" @bind-Value="transaction.Amount" placeholder="0.00" />
+                    <ValidationMessage For="() => transaction.Amount" class="text-danger" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="date">Datum: <span class="text-danger">*</span></label>
+                    <InputDate class="form-control" id="date" @bind-Value="transaction.Date" />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="type">Typ: <span class="text-danger">*</span></label>
+                        <InputSelect class="form-select" id="type" @bind-Value="transaction.Type">
+                            <option value="@TransactionType.Expense">Ausgabe</option>
+                            <option value="@TransactionType.Income">Einnahme</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="category">Kategorie:</label>
+                        <InputText class="form-control" id="category" @bind-Value="transaction.Category" placeholder="z.B. Lebensmittel..." />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="note">Notiz:</label>
+                    <InputTextArea class="form-control" id="note" @bind-Value="transaction.Note" placeholder="Optionale Anmerkung..." rows="3" />
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" type="submit" disabled="@isSaving">
+                        @if (isSaving)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Wird gespeichert...</span>
+                        }
+                        else
+                        {
+                            <span>Speichern</span>
+                        }
+                    </button>
+                    <button class="btn btn-secondary" type="button" @onclick="Cancel" disabled="@isSaving">Abbrechen</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
 </div>
-
-<div class="mb-3">
-    <label>Betrag</label>
-    <input class="form-control" type="number" @bind="transaction.Amount" />
-</div>
-
-<div class="mb-3">
-    <label>Datum</label>
-    <input class="form-control" type="date" @bind="transaction.Date" />
-</div>
-
-<div class="mb-3">
-    <label>Art</label>
-    <select class="form-control" @bind="transaction.Type">
-        <option value="@TransactionType.Income">Einnahme</option>
-        <option value="@TransactionType.Expense">Ausgabe</option>
-    </select>
-</div>
-
-<div class="mb-3">
-    <label>Kategorie</label>
-    <input class="form-control" @bind="transaction.Category" />
-</div>
-
-<div class="mb-3">
-    <label>Notiz</label>
-    <input class="form-control" @bind="transaction.Note" />
-</div>
-
-<button class="btn btn-success" @onclick="Save">Speichern</button>
 
 @code {
-    private Transaction transaction = new Transaction
-    {
-        Date = DateTime.Today,
-        Type = TransactionType.Expense
-    };
+    private FinanzAladin.Models.Transaction transaction = new();
+    private bool isSaving = false;
 
-    private void Save()
+    private async Task SaveTransaction()
     {
-        TransactionService.AddTransaction(transaction);
-        Navigation.NavigateTo("/transactions");
+        isSaving = true;
+        try
+        {
+            // Ensure DateTime is in UTC for Npgsql compatibility
+            transaction.Date = DateTime.SpecifyKind(transaction.Date, DateTimeKind.Utc);
+            await TransactionService.AddTransactionAsync(transaction);
+            NavigationManager.NavigateTo("/transactions");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fehler beim Speichern: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/dashboard");
     }
 }

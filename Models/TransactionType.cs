@@ -1,12 +1,8 @@
-﻿namespace FinanzAladin.Classes
+﻿namespace FinanzAladin.Models
 {
-    public class TransactionType
+    public enum TransactionType
     {
-
-       
-        Type incomeType;
-        Type expenseType;
-
-
+        Income,
+        Expense
     }
 }
