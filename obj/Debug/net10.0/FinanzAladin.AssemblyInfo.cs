@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FinanzAladin")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f73607a7af23a2464be2367d2cd434b19a2607e0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+de026c49fae9609dc94f4313e2e141fee259ad0c")]
 [assembly: System.Reflection.AssemblyProductAttribute("FinanzAladin")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FinanzAladin")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
