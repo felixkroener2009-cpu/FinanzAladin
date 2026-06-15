@@ -13,7 +13,7 @@ builder.Services.AddDbContextFactory<FinanceDbContext>(options =>
 
 // Register Services
 builder.Services.AddScoped<TransactionService>();
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddSingleton<AuthService>();
 
 var app = builder.Build();
 

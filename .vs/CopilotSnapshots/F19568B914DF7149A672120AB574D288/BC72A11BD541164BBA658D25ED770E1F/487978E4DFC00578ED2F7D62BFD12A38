@@ -1,0 +1,110 @@
+﻿@page "/dashboard"
+@rendermode InteractiveServer
+
+@using FinanzAladin.Services;
+@inject TransactionService TransactionService
+
+<PageTitle>Dashboard</PageTitle>
+
+<div class="container mt-4">
+    <h1>Finanzmanager Dashboard</h1>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Fehler:</strong> @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="alert alert-info" role="alert">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Daten werden geladen...
+        </div>
+    }
+    else
+    {
+        <div class="row mt-4">
+            <div class="col-md-4 mb-4">
+                <div class="card border-success">
+                    <div class="card-body">
+                        <h5 class="card-title">Kontostand</h5>
+                        <p class="card-text display-5 text-success">
+                            <strong>@balance.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))</strong>
+                        </p>
+                        <small class="text-muted">Einnahmen - Ausgaben</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card border-success">
+                    <div class="card-body">
+                        <h5 class="card-title">Einnahmen</h5>
+                        <p class="card-text display-5 text-success">
+                            <strong>+@income.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))</strong>
+                        </p>
+                        <small class="text-muted">Gesamte Einnahmen</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card border-danger">
+                    <div class="card-body">
+                        <h5 class="card-title">Ausgaben</h5>
+                        <p class="card-text display-5 text-danger">
+                            <strong>-@expenses.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))</strong>
+                        </p>
+                        <small class="text-muted">Gesamte Ausgaben</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+            <a class="btn btn-primary btn-lg" href="/add-transaction">
+                <span class="oi oi-plus" aria-hidden="true"></span> Neue Buchung
+            </a>
+            <a class="btn btn-secondary btn-lg" href="/transactions">
+                <span class="oi oi-list" aria-hidden="true"></span> Alle Buchungen anzeigen
+            </a>
+        </div>
+    }
+</div>
+
+@code {
+    private decimal balance = 0;
+    private decimal income = 0;
+    private decimal expenses = 0;
+    private bool isLoading = true;
+    private string? errorMessage = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            income = await TransactionService.GetIncomeAsync();
+            expenses = await TransactionService.GetExpensesAsync();
+            balance = await TransactionService.GetBalanceAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Fehler beim Laden der Daten: {ex.Message}";
+            Console.WriteLine($"Dashboard Error: {ex}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

@@ -1,0 +1,8 @@
+wwwroot\app.css
+Components\Layout\ReconnectModal.razor.js
+C:\Users\Felix\.nuget\packages\microsoft.aspnetcore.app.internal.assets\10.0.7\build\..\_framework\blazor.web.js
+C:\Users\Felix\.nuget\packages\microsoft.aspnetcore.app.internal.assets\10.0.7\build\..\_framework\blazor.server.js
+C:\HAK\3 KLasse\AP\FinanzAladin\wwwroot\app.css
+C:\HAK\3 KLasse\AP\FinanzAladin\Components\Layout\ReconnectModal.razor.js
+C:\Users\Felix\.nuget\packages\microsoft.aspnetcore.app.internal.assets\10.0.7\_framework\blazor.web.js
+C:\Users\Felix\.nuget\packages\microsoft.aspnetcore.app.internal.assets\10.0.7\_framework\blazor.server.js

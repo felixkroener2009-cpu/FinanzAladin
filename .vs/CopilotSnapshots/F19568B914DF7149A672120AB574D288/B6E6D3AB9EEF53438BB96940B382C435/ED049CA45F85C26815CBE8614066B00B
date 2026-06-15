@@ -1,0 +1,65 @@
+﻿using FinanzAladin.Database;
+using FinanzAladin.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace FinanzAladin.Services
+{
+    public class TransactionService
+    {
+        private readonly IDbContextFactory<FinanceDbContext> _dbContextFactory;
+
+        public TransactionService(IDbContextFactory<FinanceDbContext> dbContextFactory)
+        {
+            _dbContextFactory = dbContextFactory;
+        }
+
+        public List<Transaction> GetTransactions()
+        {
+            using var context = _dbContextFactory.CreateDbContext();
+
+            return context.Transactions
+                .OrderByDescending(t => t.Date)
+                .ToList();
+        }
+
+        public void AddTransaction(Transaction transaction)
+        {
+            using var context = _dbContextFactory.CreateDbContext();
+
+            context.Transactions.Add(transaction);
+            context.SaveChanges();
+        }
+
+        public void DeleteTransaction(int id)
+        {
+            using var context = _dbContextFactory.CreateDbContext();
+
+            var transaction = context.Transactions.FirstOrDefault(t => t.Id == id);
+
+            if (transaction != null)
+            {
+                context.Transactions.Remove(transaction);
+                context.SaveChanges();
+            }
+        }
+
+        public decimal GetIncome()
+        {
+            return GetTransactions()
+                .Where(t => t.Type == TransactionType.Income)
+                .Sum(t => t.Amount);
+        }
+
+        public decimal GetExpenses()
+        {
+            return GetTransactions()
+                .Where(t => t.Type == TransactionType.Expense)
+                .Sum(t => t.Amount);
+        }
+
+        public decimal GetBalance()
+        {
+            return GetIncome() - GetExpenses();
+        }
+    }
+}

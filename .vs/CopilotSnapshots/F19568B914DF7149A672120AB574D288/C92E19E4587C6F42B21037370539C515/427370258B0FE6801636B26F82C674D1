@@ -1,0 +1,65 @@
+﻿@page "/add-transaction"
+@rendermode InteractiveServer
+
+@inject TransactionService TransactionService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Transaktion hinzufügen</PageTitle>
+
+<h1>Transaktion hinzufügen</h1>
+
+<EditForm Model="transaction" OnValidSubmit="SaveTransaction">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">Titel:</label>
+        <InputText class="form-control" @bind-Value="transaction.Title" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Betrag:</label>
+        <InputNumber class="form-control" @bind-Value="transaction.Amount" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Datum:</label>
+        <InputDate class="form-control" @bind-Value="transaction.Date" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Typ:</label>
+        <InputSelect class="form-select" @bind-Value="transaction.Type">
+            <option value="@TransactionType.Income">Einnahme</option>
+            <option value="@TransactionType.Expense">Ausgabe</option>
+        </InputSelect>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Kategorie:</label>
+        <InputText class="form-control" @bind-Value="transaction.Category" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Notiz:</label>
+        <InputTextArea class="form-control" @bind-Value="transaction.Note" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Speichern</button>
+    <button class="btn btn-secondary" type="button" @onclick="Cancel">Abbrechen</button>
+</EditForm>
+
+@code {
+    private Transaction transaction = new Transaction();
+
+    private void SaveTransaction()
+    {
+        TransactionService.AddTransaction(transaction);
+        NavigationManager.NavigateTo("/transactions");
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/dashboard");
+    }
+}

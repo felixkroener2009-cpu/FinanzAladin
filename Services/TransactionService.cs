@@ -68,10 +68,10 @@ namespace FinanzAladin.Services
             }
         }
 
-        public void DeleteTransaction(int id, int userId)
+        public void DeleteTransaction(int id, int UserId)
         {
             using var context = _dbContextFactory.CreateDbContext();
-            var transaction = context.Transactions.FirstOrDefault(t => t.Id == id && t.UserId == userId);
+            var transaction = context.Transactions.FirstOrDefault(t => t.Id == id && t.UserId == UserId);
             if (transaction != null)
             {
                 context.Transactions.Remove(transaction);

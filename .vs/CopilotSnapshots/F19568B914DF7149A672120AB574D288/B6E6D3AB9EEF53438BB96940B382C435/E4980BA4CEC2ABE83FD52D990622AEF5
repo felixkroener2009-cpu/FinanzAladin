@@ -1,0 +1,79 @@
+﻿@page "/transactions"
+@rendermode InteractiveServer
+@using FinanzAladin.Models;
+@using FinanzAladin.Services;
+@inject TransactionService TransactionService
+
+<PageTitle>Alle Buchungen</PageTitle>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Alle Buchungen</h1>
+        <a class="btn btn-primary" href="/add-transaction">+ Neue Buchung</a>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="alert alert-info" role="alert">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Laden...
+        </div>
+    }
+    else if (transactions == null || !transactions.Any())
+    {
+        <div class="alert alert-warning" role="alert">
+            Keine Buchungen vorhanden. <a href="/add-transaction">Erstelle deine erste Buchung</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Titel</th>
+            <th>Betrag</th>
+            <th>Datum</th>
+            <th>Art</th>
+            <th>Kategorie</th>
+            <th>Notiz</th>
+            <th>Aktion</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var transaction in transactions)
+        {
+            <tr>
+                <td>@transaction.Id</td>
+                <td>@transaction.Title</td>
+                <td>@transaction.Amount €</td>
+                <td>@transaction.Date.ToShortDateString()</td>
+                <td>@(transaction.Type == TransactionType.Income ? "Einnahme" : "Ausgabe")</td>
+                <td>@transaction.Category</td>
+                <td>@transaction.Note</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" @onclick="() => DeleteTransaction(transaction.Id)">
+                        Löschen
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<FinanzAladin.Models.Transaction> transactions = new();
+
+    protected override void OnInitialized()
+    {
+        transactions = TransactionService.GetTransactions();
+    }
+
+    private void DeleteTransaction(int id)
+    {
+        TransactionService.DeleteTransaction(id);
+        transactions = TransactionService.GetTransactions();
+    }
+}

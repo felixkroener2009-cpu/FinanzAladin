@@ -19,7 +19,8 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> 
+    
 }
 else
 {
@@ -85,6 +86,7 @@ else
                                     {
                                         <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                                         <span>Wird angemeldet...</span>
+
                                     }
                                     else
                                     {
@@ -111,17 +113,6 @@ else
                             </div>
                         </div>
                     </div>
-
-                    <!-- Info Card -->
-                    <div class="card bg-white bg-opacity-10 border-light rounded-3 mt-4 shadow" style="color: white;">
-                        <div class="card-body">
-                            <p class="card-text small mb-0">
-                                <strong>💡 Demo-Konto:</strong><br>
-                                Email: demo@example.com<br>
-                                Passwort: demo123
-                            </p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -135,14 +126,14 @@ else
     private string successMessage = "";
     private bool isLoading = false;
 
-    protected override void OnInitialized()
+     protected override void OnInitialized()
     {
-        // Wenn bereits angemeldet, weitergeleitet zum Dashboard
-        if (AuthService.IsAuthenticated)
-        {
-            NavigationManager.NavigateTo("/dashboard", replace: true);
+         // Wenn bereits angemeldet, weitergeleitet zum Dashboard
+         if (AuthService.IsAuthenticated)
+         {
+            NavigationManager.NavigateTo("/dashboard");
         }
-    }
+     }
 
     private async Task HandleLogin()
     {
@@ -162,9 +153,10 @@ else
 
             if (success)
             {
+                NavigationManager.NavigateTo("/dashboard");
                 successMessage = message;
-                await Task.Delay(1500);
-                NavigationManager.NavigateTo("/dashboard", forceLoad: true);
+                await Task.Delay(500);
+                
             }
             else
             {
